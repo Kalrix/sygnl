@@ -1,8 +1,8 @@
 /* api/og.tsx */
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "next/og"; // 👈 ye karo, @vercel/og nahi
 
 export const config = {
-  runtime: "edge", // 👈 Edge runtime required
+  runtime: "edge",
 };
 
 export default function handler() {
@@ -10,15 +10,15 @@ export default function handler() {
     (
       <div
         style={{
+          fontSize: 60,
+          color: "white",
+          background: "black",
           width: "100%",
           height: "100%",
           display: "flex",
-          background: "black",
-          color: "white",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 64,
-          fontWeight: 900,
+          fontWeight: "bold",
         }}
       >
         sygnl.in 🚀
