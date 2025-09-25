@@ -7,13 +7,14 @@ type Props = {
   handle: string;
   claimedCount?: number;
   cap?: number;
+  onReset?: () => void; // optional
 };
 
-const SITE = "https://sygnl.in";
+const SITE = "https://sygnl.in"; // <-- change to https://syngl.in if that's your domain
 const buildShareUrl = (h: string) =>
   `${SITE}/share/${encodeURIComponent(h)}?ref=${encodeURIComponent(h)}&utm_source=app&utm_campaign=share_card`;
 
-const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000 }) => {
+const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000, onReset }) => {
   const h = (handle || "").trim().toLowerCase();
   const shareUrl = useMemo(() => buildShareUrl(h), [h]);
 
@@ -50,7 +51,8 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
           {/* ✅ Congratulations line */}
           <Text style={styles.congrats}>🎉 Congratulations! You secured your name</Text>
 
-          <Text style={styles.headline}>sygnl.in/{h}</Text>
+          {/* ✅ This will now show your URL correctly */}
+          <Text style={styles.headline}>{SITE.replace(/^https?:\/\//, "")}/{h}</Text>
 
           <Text style={styles.sub}>
             Bharat’s social platform. Every voice matters. Every creation pays.
@@ -82,6 +84,12 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
           <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
             <Text style={styles.toastText}>Link copied</Text>
           </Animated.View>
+
+          {onReset && (
+            <Pressable onPress={onReset} style={styles.secondaryBtn}>
+              <Text style={styles.secondaryBtnText}>Secure another handle</Text>
+            </Pressable>
+          )}
         </View>
       </LinearGradient>
     </View>
@@ -90,12 +98,7 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
 
 const styles = StyleSheet.create({
   wrap: { alignItems: "center", width: "100%", marginTop: 28, paddingHorizontal: 12 },
-  aura: {
-    width: "100%",
-    maxWidth: 680,
-    padding: 2,
-    borderRadius: 28,
-  },
+  aura: { width: "100%", maxWidth: 680, padding: 2, borderRadius: 28 },
   card: {
     borderRadius: 26,
     paddingVertical: 26,
@@ -106,79 +109,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
   },
-  congrats: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#00ffff",
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  headline: {
-    fontSize: 30,
-    fontWeight: "900",
-    color: "#fff",
-    letterSpacing: 0.5,
-    textAlign: "center",
-  },
-  sub: {
-    fontSize: 14,
-    color: "#cfcfcf",
-    textAlign: "center",
-    lineHeight: 20,
-    maxWidth: 560,
-    marginTop: 4,
-  },
+  congrats: { fontSize: 16, fontWeight: "700", color: "#00ffff", textAlign: "center", marginBottom: 6 },
+  headline: { fontSize: 30, fontWeight: "900", color: "#fff", letterSpacing: 0.5, textAlign: "center" },
+  sub: { fontSize: 14, color: "#cfcfcf", textAlign: "center", lineHeight: 20, maxWidth: 560, marginTop: 4 },
   ribbon: {
-    marginTop: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,215,0,0.10)",
-    borderWidth: 1,
-    borderColor: "rgba(255,215,0,0.35)",
+    marginTop: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999,
+    backgroundColor: "rgba(255,215,0,0.10)", borderWidth: 1, borderColor: "rgba(255,215,0,0.35)",
   },
-  ribbonText: {
-    fontSize: 12.5,
-    fontWeight: "800",
-    color: "#ffd700",
-    letterSpacing: 0.3,
-  },
+  ribbonText: { fontSize: 12.5, fontWeight: "800", color: "#ffd700", letterSpacing: 0.3 },
   progressWrap: { width: "100%", maxWidth: 560, marginTop: 6, alignItems: "center", gap: 8 },
-  progressTrack: {
-    width: "100%",
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
-    backgroundColor: "#00ffff",
-  },
+  progressTrack: { width: "100%", height: 8, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: 999, backgroundColor: "#00ffff" },
   progressLabel: { fontSize: 12, color: "#9a9a9a" },
   cta: {
-    marginTop: 10,
-    height: 52,
-    paddingHorizontal: 22,
-    borderRadius: 999,
-    backgroundColor: "#00ffff",
-    alignItems: "center",
-    justifyContent: "center",
+    marginTop: 10, height: 52, paddingHorizontal: 22, borderRadius: 999,
+    backgroundColor: "#00ffff", alignItems: "center", justifyContent: "center",
   },
   ctaText: { color: "#000", fontWeight: "900", fontSize: 16, letterSpacing: 0.2 },
   miniLink: { fontSize: 11, color: "#7b7b7b", marginTop: 6, maxWidth: 580 },
   toast: {
-    position: "absolute",
-    bottom: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: "rgba(0,0,0,0.65)",
-    borderWidth: 1,
+    position: "absolute", bottom: 14, paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 10, backgroundColor: "rgba(0,0,0,0.65)", borderWidth: 1,
     borderColor: "rgba(255,255,255,0.18)",
   },
   toastText: { color: "#eaeaea", fontSize: 12, fontWeight: "700" },
+  secondaryBtn: {
+    marginTop: 10, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999,
+    borderColor: "rgba(255,255,255,0.18)", borderWidth: 1, backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  secondaryBtnText: { color: "#eaeaea", fontWeight: "700", fontSize: 13 },
 });
 
 export default SecureCard;
