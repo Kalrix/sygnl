@@ -4,8 +4,7 @@
     "framework": null,
     "cleanUrls": true,
     "rewrites": [
-      { "source": "/api/(.*)", "destination": "/api/$1.ts" },
-      { "source": "/share/(.*)", "destination": "/api/share.ts?handle=$1" },
+      { "source": "/share/(.*)", "destination": "/api/share?handle=$1" },
       { "source": "/(.*)", "destination": "/dist/$1" }
     ]
   }
