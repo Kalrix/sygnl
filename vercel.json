@@ -3,11 +3,10 @@
     "outputDirectory": "dist",
     "framework": null,
     "cleanUrls": true,
-    "routes": [
-      { "handle": "filesystem" },
-  
-      { "src": "/share/(.*)", "dest": "/api/share?handle=$1" },
-      { "src": "/(.*)", "dest": "/" }
+    "rewrites": [
+      { "source": "/api/(.*)", "destination": "/api/$1" },
+      { "source": "/share/(.*)", "destination": "/api/share?handle=$1" },
+      { "source": "/(.*)", "destination": "/" }
     ]
   }
   
