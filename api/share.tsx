@@ -1,21 +1,19 @@
-/* api/share.ts */
+// /api/share.ts
 export const config = { runtime: 'edge' };
 
 const SITE = 'https://sygnl.in';
 
 export default async function handler(req: Request) {
   const url = new URL(req.url);
-  // handle can come from rewrite (?handle=...), or fallback to query/path
   const handle =
     url.searchParams.get('handle') ||
     url.pathname.split('/').pop() ||
     'yourname';
 
-  const og = `${SITE}/api/og?handle=${encodeURIComponent(handle)}`;
+  // cache-buster v=1 helps when iterating on the design
+  const og = `${SITE}/api/og?handle=${encodeURIComponent(handle)}&v=1`;
   const title = `I secured my name on sygnl — secure yours now`;
-  const desc =
-    `Bharat’s social platform. Every voice matters. Every creation pays. ` +
-    `First 50,000 get 1 year free premium.`;
+  const desc = `Bharat’s social platform. Every voice matters. Every creation pays. First 50,000 get 1 year free premium.`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -38,13 +36,17 @@ export default async function handler(req: Request) {
 <meta name="twitter:description" content="${desc}" />
 <meta name="twitter:image" content="${og}" />
 
-<!-- Optional: bounce humans to the app while crawlers keep the meta -->
+<!-- Redirect real users to the app; crawlers will keep the meta -->
 <meta http-equiv="refresh" content="0; url=/" />
 </head>
-<body></body></html>`;
+<body></body>
+</html>`;
 
   return new Response(html, {
     status: 200,
-    headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=3600' },
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'public, max-age=3600'
+    },
   });
 }
