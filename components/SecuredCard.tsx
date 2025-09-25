@@ -10,13 +10,19 @@ type Props = {
   onReset?: () => void; // optional
 };
 
-const SITE = "https://sygnl.in"; // <-- change to https://syngl.in if that's your domain
+const SITE = "https://sygnl.in"; // change if needed
 const buildShareUrl = (h: string) =>
+  `${SITE}/share/${encodeURIComponent(h)}?ref=${encodeURIComponent(h)}&utm_source=app&utm_campaign=share_card`;
+
+const buildShareText = (h: string) =>
+  `I just secured my name on sygnl — Bharat’s social platform.\n` +
+  `First 50,000 get 1 year free premium. Join me now:\n` +
   `${SITE}/share/${encodeURIComponent(h)}?ref=${encodeURIComponent(h)}&utm_source=app&utm_campaign=share_card`;
 
 const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000, onReset }) => {
   const h = (handle || "").trim().toLowerCase();
   const shareUrl = useMemo(() => buildShareUrl(h), [h]);
+  const shareText = useMemo(() => buildShareText(h), [h]);
 
   const progress = Math.max(0, Math.min(1, claimedCount / cap));
   const progressPct = Math.round(progress * 100);
@@ -24,8 +30,8 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
   const [copied, setCopied] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
-  const copyLink = async () => {
-    await Clipboard.setStringAsync(shareUrl);
+  const copyRichText = async () => {
+    await Clipboard.setStringAsync(shareText);
     setCopied(true);
   };
 
@@ -48,10 +54,8 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
         style={styles.aura}
       >
         <View style={styles.card}>
-          {/* ✅ Congratulations line */}
           <Text style={styles.congrats}>🎉 Congratulations! You secured your name</Text>
 
-          {/* ✅ This will now show your URL correctly */}
           <Text style={styles.headline}>{SITE.replace(/^https?:\/\//, "")}/{h}</Text>
 
           <Text style={styles.sub}>
@@ -73,16 +77,18 @@ const SecureCard: React.FC<Props> = ({ handle, claimedCount = 21420, cap = 50000
             </Text>
           </View>
 
-          <Pressable onPress={copyLink} style={styles.cta}>
-            <Text style={styles.ctaText}>Copy your share link</Text>
+          {/* Copy rich text (message + link) */}
+          <Pressable onPress={copyRichText} style={styles.cta}>
+            <Text style={styles.ctaText}>Copy share text</Text>
           </Pressable>
 
+          {/* Show the actual link below (muted) */}
           <Text style={styles.miniLink} numberOfLines={1} ellipsizeMode="middle">
             {shareUrl}
           </Text>
 
           <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
-            <Text style={styles.toastText}>Link copied</Text>
+            <Text style={styles.toastText}>Copied — paste anywhere to share</Text>
           </Animated.View>
 
           {onReset && (
@@ -120,7 +126,7 @@ const styles = StyleSheet.create({
   progressWrap: { width: "100%", maxWidth: 560, marginTop: 6, alignItems: "center", gap: 8 },
   progressTrack: { width: "100%", height: 8, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 999, backgroundColor: "#00ffff" },
-  progressLabel: { fontSize: 12, color: "#9a9a9a" },
+  progressLabel: { fontSize: 12, color: "#9a9aa" },
   cta: {
     marginTop: 10, height: 52, paddingHorizontal: 22, borderRadius: 999,
     backgroundColor: "#00ffff", alignItems: "center", justifyContent: "center",
