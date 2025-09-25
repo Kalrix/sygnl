@@ -3,14 +3,10 @@
     "outputDirectory": "dist",
     "framework": null,
     "cleanUrls": true,
-    "builds": [
-      { "src": "dist/**/*", "use": "@vercel/static" },
-      { "src": "api/**/*.ts", "use": "@vercel/node" }
-    ],
-    "routes": [
-      { "src": "/api/(.*)", "dest": "/api/$1.ts" },
-      { "src": "/share/(.*)", "dest": "/api/share.ts?handle=$1" },
-      { "src": "/(.*)", "dest": "/dist/$1" }
+    "rewrites": [
+      { "source": "/api/(.*)", "destination": "/api/$1.ts" },
+      { "source": "/share/(.*)", "destination": "/api/share.ts?handle=$1" },
+      { "source": "/(.*)", "destination": "/dist/$1" }
     ]
   }
   
