@@ -1,30 +1,36 @@
-/* api/og.ts */
-import { ImageResponse } from '@vercel/og';
+// api/og.ts
+import { ImageResponse } from "@vercel/og";
 
-export const config = { runtime: 'edge' };
+export const config = {
+  runtime: "edge",   // 👈 yeh line add karni zaruri hai
+};
 
 export default async function handler(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const handle = (searchParams.get('handle') || 'yourname').toLowerCase();
+  try {
+    const { searchParams } = new URL(req.url);
+    const handle = searchParams.get("handle") || "sygnl";
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: 1200, height: 630, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', background: 'black', color: 'white',
-          fontFamily: 'system-ui, Segoe UI, Arial',
-        }}
-      >
-        <h1 style={{ fontSize: 66, fontWeight: 800, margin: 0 }}>I secured my name on</h1>
-        <h2 style={{ fontSize: 60, fontWeight: 900, color: '#00ffff', margin: '10px 0' }}>
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "black",
+            color: "white",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 64,
+            fontWeight: 800,
+          }}
+        >
           sygnl.in/{handle}
-        </h2>
-        <p style={{ fontSize: 28, color: '#cfcfcf', marginTop: 10 }}>
-          Bharat’s social platform · First 50,000 get 1 year free premium
-        </p>
-      </div>
-    ),
-    { width: 1200, height: 630 }
-  );
+        </div>
+      ),
+      { width: 1200, height: 630 }
+    );
+  } catch (e) {
+    return new Response("Failed to generate image", { status: 500 });
+  }
 }
