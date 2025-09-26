@@ -14,19 +14,19 @@ module.exports = async (req, res) => {
   // handle can come from /share/:handle (via rewrite) or ?handle=
   const qpHandle = url.searchParams.get("handle");
   const pathHandle = url.pathname.split("/").pop();
+  const handle = sanitizeHandle(qpHandle || pathHandle || "friend");
 
-  const handleRaw = qpHandle || pathHandle || "friend";
-  const handle = sanitizeHandle(handleRaw);
+  // ---- Personalized copy ----
+  // Title used by platforms (short, punchy, includes handle)
+  const title = `🎉 @${handle} secured their identity on sygnl — claim yours now!`;
 
-  // Dynamic text (FOMO)
-  const title = `🎉 ${handle} secured their name on sygnl.in — claim yours now!`;
+  // Long description for preview (your requested tone)
   const desc =
-    "Bharat’s social platform. Every voice matters. Every creation pays. First 50,000 get 1 year free premium.";
+    "I have secured my identity on the upcoming social platform sygnl — where every voice matters and every signal is rewarded. Join me today and get 1 year of free premium (first 50K).";
 
-  // Static image + per-handle cache buster (so each share gets its own cached URL)
+  // Static OG image (hosted in /public/og) with per-handle cache-buster
   const og = `${SITE}/og/og-default.png?h=${encodeURIComponent(handle)}`;
 
-  // Canonical share URL
   const shareUrl = `${SITE}/share/${encodeURIComponent(handle)}`;
 
   const html = `<!doctype html>
@@ -45,24 +45,24 @@ module.exports = async (req, res) => {
 <meta property="og:image" content="${og}" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="I secured my name on sygnl.in/${handle}" />
+<meta property="og:image:alt" content="sygnl.in/@${handle} — join today and get free premium" />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${desc}" />
 <meta name="twitter:image" content="${og}" />
-<meta name="twitter:site" content="@sygnl_in" />
+<!-- Optional if you have a Twitter handle -->
+<!-- <meta name="twitter:site" content="@sygnl_in" /> -->
 
-<!-- Humans get redirected to app; crawlers stay for meta -->
 <link rel="canonical" href="${shareUrl}" />
+<!-- Humans bounce to app; crawlers keep meta -->
 <meta http-equiv="refresh" content="0; url=/" />
 </head>
 <body></body>
 </html>`;
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  // allow crawlers/CDN to cache briefly
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
   res.status(200).send(html);
 };
