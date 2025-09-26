@@ -1,7 +1,24 @@
 // /api/og.js
-const { createCanvas } = require('canvas');
+const path = require('path');
+const { createCanvas, registerFont } = require('canvas');
 
-// ---------- helpers ----------
+// ---------- register local fonts (bundled with the function) ----------
+try {
+  // If you downloaded the variable font:
+  registerFont(path.join(__dirname, '_fonts', 'NotoSans-Regular.ttf'), {
+    family: 'SgnlUI',
+    weight: '400'
+  });
+  // If you also downloaded a Bold TTF, uncomment and keep both:
+  // registerFont(path.join(__dirname, '_fonts', 'NotoSans-Bold.ttf'), {
+  //   family: 'SgnlUI',
+  //   weight: '700'
+  // });
+} catch (e) {
+  // Fallback if fonts missing – still render with system stack
+  console.warn('Font register failed, using default fonts', e);
+}
+
 function roundedRectPath(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -15,7 +32,7 @@ function roundedRectPath(ctx, x, y, w, h, r) {
 function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
   const words = String(text).split(/\s+/);
   let line = '';
-  let linesDrawn = 0;
+  let lines = 0;
 
   for (let i = 0; i < words.length; i++) {
     const test = line ? line + ' ' + words[i] : words[i];
@@ -23,9 +40,8 @@ function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
     if (w > maxWidth && line) {
       ctx.fillText(line, x, y);
       y += lineHeight;
-      linesDrawn++;
-      if (linesDrawn >= maxLines - 1) {
-        // ellipsis for final line
+      lines++;
+      if (lines >= maxLines - 1) {
         let truncated = '';
         for (; i < words.length; i++) {
           const attempt = truncated ? truncated + ' ' + words[i] : words[i];
@@ -57,7 +73,7 @@ module.exports = async (req, res) => {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
 
-  // subtle diagonal lines
+  // diagonal lines
   ctx.globalAlpha = 0.12;
   ctx.fillStyle = '#ffffff';
   for (let x = -H; x < W + H; x += 18) {
@@ -84,29 +100,27 @@ module.exports = async (req, res) => {
 
   // ---------- text styles ----------
   ctx.textAlign = 'center';
-  ctx.antialias = 'subpixel';
 
-  // headline 1
+  // headline
   ctx.fillStyle = '#ffffff';
-  ctx.font = '800 66px Arial, Helvetica, sans-serif';
+  ctx.font = '800 66px "SgnlUI", Arial, Helvetica, sans-serif';
   ctx.fillText('I secured my name on', W / 2, 220);
 
-  // handle (truncate visually if super long)
+  // handle
   const prettyHandle = `sygnl.in/${handle}`;
   ctx.fillStyle = '#00ffff';
-  ctx.font = '900 60px Arial, Helvetica, sans-serif';
+  ctx.font = '900 60px "SgnlUI", Arial, Helvetica, sans-serif';
   const handleWidth = ctx.measureText(prettyHandle).width;
   if (handleWidth <= 1040) {
     ctx.fillText(prettyHandle, W / 2, 300);
   } else {
-    // shrink a bit for very long handles
-    ctx.font = '900 54px Arial, Helvetica, sans-serif';
+    ctx.font = '900 54px "SgnlUI", Arial, Helvetica, sans-serif';
     ctx.fillText(prettyHandle, W / 2, 300);
   }
 
-  // tagline (wrapped)
+  // tagline
   ctx.fillStyle = '#cfcfcf';
-  ctx.font = '400 28px Arial, Helvetica, sans-serif';
+  ctx.font = '400 28px "SgnlUI", Arial, Helvetica, sans-serif';
   drawWrappedText(
     ctx,
     'Bharat’s social platform · Every voice matters. Every creation pays.',
@@ -117,11 +131,10 @@ module.exports = async (req, res) => {
     2
   );
 
-  // ---------- badge ----------
+  // badge
   const badgeW = 520, badgeH = 74;
   const badgeX = W / 2 - badgeW / 2, badgeY = 430;
   roundedRectPath(ctx, badgeX, badgeY, badgeW, badgeH, 26);
-  // inner glow
   const yGrad = ctx.createLinearGradient(0, badgeY, 0, badgeY + badgeH);
   yGrad.addColorStop(0, '#ffe680');
   yGrad.addColorStop(1, '#ffd400');
@@ -132,15 +145,15 @@ module.exports = async (req, res) => {
   ctx.shadowBlur = 0;
 
   ctx.fillStyle = '#121212';
-  ctx.font = '800 28px Arial, Helvetica, sans-serif';
+  ctx.font = '800 28px "SgnlUI", Arial, Helvetica, sans-serif';
   ctx.fillText('First 50,000 get 1 year free', W / 2, badgeY + 50);
 
-  // ---------- footer ----------
+  // footer
   ctx.fillStyle = '#8a8a8a';
-  ctx.font = '600 22px Arial, Helvetica, sans-serif';
+  ctx.font = '600 22px "SgnlUI", Arial, Helvetica, sans-serif';
   ctx.fillText('sygnl.in', W / 2, H - 40);
 
-  // ---------- output ----------
+  // output
   const png = canvas.toBuffer('image/png');
   res.setHeader('Content-Type', 'image/png');
   res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600');
