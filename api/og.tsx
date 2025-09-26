@@ -1,65 +1,138 @@
-// /api/og.js
-const { createCanvas } = require('canvas');
+// /api/og.tsx
+import { ImageResponse } from '@vercel/og';
 
-module.exports = async (req, res) => {
-  const handle = (req.query.handle || 'yourname').toLowerCase();
+export const config = { runtime: 'edge' };
 
-  const width = 1200, height = 630;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
+export default async function handler(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const handle = (searchParams.get('handle') || 'yourname').toLowerCase();
 
-  // background gradient
-  const g = ctx.createLinearGradient(0, 0, width, height);
-  g.addColorStop(0, '#0b0b0b');
-  g.addColorStop(1, '#141427');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, width, height);
+  // Design tokens
+  const W = 1200;
+  const H = 630;
+  const brand = '#00ffff';
+  const bg = 'linear-gradient(135deg, #0b0b0f 0%, #141427 100%)';
 
-  // glow bars
-  ctx.globalAlpha = 0.25;
-  ctx.fillStyle = '#00ffff';
-  ctx.beginPath();
-  ctx.ellipse(300, 520, 460, 120, Math.PI / 12, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.fillStyle = '#ff7dd6';
-  ctx.beginPath();
-  ctx.ellipse(900, 140, 420, 110, -Math.PI / 16, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.globalAlpha = 1;
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: W,
+          height: H,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundImage: bg,
+          color: '#fff',
+          // ✅ Only system-safe fonts to avoid tofu squares
+          fontFamily:
+            'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+          position: 'relative',
+        }}
+      >
+        {/* Soft neon blobs for Gen-Z vibe */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -60,
+            right: -80,
+            width: 520,
+            height: 220,
+            background: 'rgba(125, 95, 255, 0.35)',
+            filter: 'blur(40px)',
+            borderRadius: 999,
+            transform: 'rotate(-8deg)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -80,
+            left: -120,
+            width: 620,
+            height: 260,
+            background: 'rgba(0, 255, 255, 0.28)',
+            filter: 'blur(42px)',
+            borderRadius: 999,
+            transform: 'rotate(10deg)',
+          }}
+        />
 
-  // text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 72px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('I secured my name on', width / 2, 240);
+        {/* Headline */}
+        <div
+          style={{
+            fontSize: 58,
+            fontWeight: 800,
+            letterSpacing: 0.2,
+            textAlign: 'center',
+            marginBottom: 12,
+            padding: '0 40px',
+            textShadow: '0 6px 22px rgba(0,0,0,0.55)',
+          }}
+        >
+          I secured my name on
+        </div>
 
-  ctx.fillStyle = '#00ffff';
-  ctx.font = '900 64px Arial';
-  ctx.fillText(`sygnl.in/${handle}`, width / 2, 320);
+        {/* Handle */}
+        <div
+          style={{
+            fontSize: 64,
+            fontWeight: 900,
+            color: brand,
+            letterSpacing: 0.3,
+            textAlign: 'center',
+            textShadow: '0 8px 26px rgba(0,255,255,0.18)',
+            marginBottom: 18,
+          }}
+        >
+          sygnl.in/{handle}
+        </div>
 
-  ctx.fillStyle = '#cfcfcf';
-  ctx.font = '28px Arial';
-  ctx.fillText('Bharat’s social platform · First 50,000 get 1 year free premium', width / 2, 390);
+        {/* Tagline */}
+        <div
+          style={{
+            fontSize: 28,
+            color: '#cfcfcf',
+            textAlign: 'center',
+            maxWidth: 1000,
+            lineHeight: 1.35,
+            padding: '0 40px',
+          }}
+        >
+          Bharat’s social platform · Every voice matters. Every creation pays.
+        </div>
 
-  // badge
-  ctx.fillStyle = '#ffd700';
-  const badgeW = 460, badgeH = 70;
-  const badgeX = width / 2 - badgeW / 2, badgeY = 470, r = 22;
-  ctx.beginPath();
-  ctx.moveTo(badgeX + r, badgeY);
-  ctx.arcTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + badgeH, r);
-  ctx.arcTo(badgeX + badgeW, badgeY + badgeH, badgeX, badgeY + badgeH, r);
-  ctx.arcTo(badgeX, badgeY + badgeH, badgeX, badgeY, r);
-  ctx.arcTo(badgeX, badgeY, badgeX + badgeW, badgeY, r);
-  ctx.closePath();
-  ctx.fill();
+        {/* Badge */}
+        <div
+          style={{
+            marginTop: 30,
+            padding: '14px 28px',
+            background: '#ffd700',
+            color: '#121212',
+            borderRadius: 999,
+            fontSize: 26,
+            fontWeight: 800,
+            letterSpacing: 0.2,
+            boxShadow: '0 10px 30px rgba(255,215,0,0.25)',
+          }}
+        >
+          🚀 First 50,000 get 1 year free
+        </div>
 
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 28px Arial';
-  ctx.fillText('🚀 First 50K get 1 year free', width / 2, badgeY + 46);
-
-  const png = canvas.toBuffer('image/png');
-  res.setHeader('Content-Type', 'image/png');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  res.status(200).send(png);
-};
+        {/* Subtle diagonal lines overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'repeating-linear-gradient( -12deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px, transparent 2px, transparent 14px )',
+            opacity: 0.18,
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+    ),
+    { width: W, height: H }
+  );
+}
