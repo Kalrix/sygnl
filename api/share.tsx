@@ -1,7 +1,6 @@
 // /api/share.js
 const SITE = process.env.SITE_URL || "https://sygnl.in";
 
-// allow [a-z0-9._] only, trim & lowercase
 const sanitizeHandle = (v) =>
   String(v || "")
     .toLowerCase()
@@ -10,23 +9,16 @@ const sanitizeHandle = (v) =>
 
 module.exports = async (req, res) => {
   const url = new URL(req.url, SITE);
-
-  // handle can come from /share/:handle (via rewrite) or ?handle=
   const qpHandle = url.searchParams.get("handle");
   const pathHandle = url.pathname.split("/").pop();
   const handle = sanitizeHandle(qpHandle || pathHandle || "friend");
 
-  // ---- Personalized copy ----
-  // Title used by platforms (short, punchy, includes handle)
   const title = `🎉 @${handle} secured their identity on sygnl — claim yours now!`;
-
-  // Long description for preview (your requested tone)
   const desc =
-    "I have secured my identity on the upcoming social platform sygnl — where every voice matters and every signal is rewarded. Join me today and get 1 year of free premium (first 50K).";
+    "I have secured my identity on the upcoming social platform sygnl — where every voice matters and every signal is rewarded. Join me today and get 1 year free premium (first 50K).";
 
-  // Static OG image (hosted in /public/og) with per-handle cache-buster
+  // Static image with a cache-buster per handle (helps Twitter/X cache)
   const og = `${SITE}/og/og-default.png?h=${encodeURIComponent(handle)}`;
-
   const shareUrl = `${SITE}/share/${encodeURIComponent(handle)}`;
 
   const html = `<!doctype html>
@@ -36,9 +28,10 @@ module.exports = async (req, res) => {
 <title>${title}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- OpenGraph -->
+<!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="sygnl" />
+<meta property="og:locale" content="en_IN" />
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="${desc}" />
 <meta property="og:url" content="${shareUrl}" />
@@ -49,20 +42,28 @@ module.exports = async (req, res) => {
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="${shareUrl}" />
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${desc}" />
 <meta name="twitter:image" content="${og}" />
-<!-- Optional if you have a Twitter handle -->
-<!-- <meta name="twitter:site" content="@sygnl_in" /> -->
+<meta name="twitter:image:alt" content="sygnl.in/@${handle}" />
 
 <link rel="canonical" href="${shareUrl}" />
-<!-- Humans bounce to app; crawlers keep meta -->
-<meta http-equiv="refresh" content="0; url=/" />
 </head>
-<body></body>
+<body style="margin:0; background:#0b0b0f; color:#fff; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;">
+    <div>
+      <h1 style="margin:0 0 12px; font-size:28px;">${title}</h1>
+      <p style="opacity:.85; max-width:720px; margin:0 auto 20px; line-height:1.4;">${desc}</p>
+      <p style="opacity:.65; margin:0 0 24px;">Preview image may take a moment to update on social apps.</p>
+      <a href="/" style="display:inline-block; background:#00ffff; color:#000; font-weight:800; padding:12px 18px; border-radius:999px; text-decoration:none;">Back to sygnl</a>
+    </div>
+  </div>
+</body>
 </html>`;
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  // allow crawlers/CDN to cache briefly
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
   res.status(200).send(html);
 };
